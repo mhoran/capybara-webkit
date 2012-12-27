@@ -189,7 +189,7 @@ CONFIG += console precompile_header debug
 CONFIG -= app_bundle
 PRECOMPILED_HEADER = stable.h
 INCLUDEPATH += ../breakpad/src
-LIBS += -L../breakpad/src/client -lbreakpad_client
+linux*|mac:LIBS += -L../breakpad/src/client -lbreakpad_client
 mac {
   LIBS += -framework CoreServices
 }
