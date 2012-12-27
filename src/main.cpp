@@ -6,8 +6,25 @@
 #ifdef Q_OS_UNIX
   #include <unistd.h>
 #endif
+#include "client/linux/handler/exception_handler.h"
+
+static bool dumpCallback(const google_breakpad::MinidumpDescriptor& descriptor,
+                         void* context,
+                         bool succeeded)
+{
+  printf("Dump path: %s\n", descriptor.path());
+  return succeeded;
+}
 
 int main(int argc, char **argv) {
+  google_breakpad::MinidumpDescriptor descriptor("/tmp");
+  google_breakpad::ExceptionHandler eh(descriptor,
+                                       NULL,
+                                       dumpCallback,
+                                       NULL,
+                                       true,
+                                       -1);
+
 #ifdef Q_OS_UNIX
   if (setpgid(0, 0) < 0) {
     std::cerr << "Unable to set new process group." << std::endl;

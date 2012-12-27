@@ -185,7 +185,8 @@ lessThan(QT_MAJOR_VERSION, 5) {
     error(At least Qt 4.8.0 is required to run capybara-webkit.)
   }
 }
-CONFIG += console precompile_header
+CONFIG += console precompile_header debug
 CONFIG -= app_bundle
 PRECOMPILED_HEADER = stable.h
-
+INCLUDEPATH += ../breakpad/src
+LIBS += -L../breakpad/src/client -lbreakpad_client

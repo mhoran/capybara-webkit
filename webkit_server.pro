@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 CONFIG += ordered
-SUBDIRS += src/webkit_server.pro
+SUBDIRS += breakpad/breakpad.pro src/webkit_server.pro
 test {
   SUBDIRS += test/testwebkitserver.pro
 }
