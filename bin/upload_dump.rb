@@ -1,9 +1,19 @@
 #!/usr/bin/env ruby
+require 'rbconfig'
 require 'net/http'
 require 'cgi'
 
+def dir
+  case RbConfig::CONFIG['host_os']
+  when /linux/
+    "linux"
+  when /darwin/
+    "mac"
+  end
+end
+
 root = File.expand_path("..", File.dirname(__FILE__))
-dump_syms = File.join(root, "breakpad", "src", "tools", "linux", "dump_syms", "dump_syms")
+dump_syms = File.join(root, "breakpad", "src", "tools", dir, "dump_syms", "dump_syms")
 data = `#{dump_syms} #{File.join(root, "bin", "webkit_server")}`
 
 def file_to_multipart(key,filename,mime_type,content)

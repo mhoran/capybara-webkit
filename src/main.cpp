@@ -6,8 +6,13 @@
 #ifdef Q_OS_UNIX
   #include <unistd.h>
 #endif
+#ifdef Q_OS_LINUX
 #include "client/linux/handler/exception_handler.h"
+#elif defined Q_OS_MAC
+#include "client/mac/handler/exception_handler.h"
+#endif
 
+#ifdef Q_OS_LINUX
 static bool dumpCallback(const google_breakpad::MinidumpDescriptor& descriptor, void* context, bool succeeded)
 {
   Q_UNUSED(context);
@@ -18,10 +23,27 @@ static bool dumpCallback(const google_breakpad::MinidumpDescriptor& descriptor, 
   }
   return succeeded;
 }
+#elif defined Q_OS_MAC
+static bool dumpCallback(const char* dump_dir, const char* minidump_id, void* context, bool succeeded)
+{
+  Q_UNUSED(context);
+  int child = fork();
+  if (child == 0) {
+    char dump_path[strlen(dump_dir) + strlen(minidump_id) + 6];
+    sprintf(dump_path, "%s/%s.dmp", dump_dir, minidump_id);
+    execl("bin/upload_dump.rb", "upload_dump.rb", dump_path, (char *) NULL);
+  }
+  return succeeded;
+}
+#endif
 
 int main(int argc, char **argv) {
+#ifdef Q_OS_LINUX
   google_breakpad::MinidumpDescriptor descriptor("/tmp");
   google_breakpad::ExceptionHandler eh(descriptor, NULL, dumpCallback, NULL, true, -1);
+#elif defined Q_OS_MAC
+  google_breakpad::ExceptionHandler eh("/tmp", NULL, dumpCallback, NULL, true, NULL);
+#endif
 
 #ifdef Q_OS_UNIX
   if (setpgid(0, 0) < 0) {
