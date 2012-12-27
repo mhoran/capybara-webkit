@@ -8,22 +8,20 @@
 #endif
 #include "client/linux/handler/exception_handler.h"
 
-static bool dumpCallback(const google_breakpad::MinidumpDescriptor& descriptor,
-                         void* context,
-                         bool succeeded)
+static bool dumpCallback(const google_breakpad::MinidumpDescriptor& descriptor, void* context, bool succeeded)
 {
+  Q_UNUSED(context);
   printf("Dump path: %s\n", descriptor.path());
+  int child = fork();
+  if (child == 0) {
+    execl("bin/upload_dump.rb", "upload_dump.rb", descriptor.path(), (char *) NULL);
+  }
   return succeeded;
 }
 
 int main(int argc, char **argv) {
   google_breakpad::MinidumpDescriptor descriptor("/tmp");
-  google_breakpad::ExceptionHandler eh(descriptor,
-                                       NULL,
-                                       dumpCallback,
-                                       NULL,
-                                       true,
-                                       -1);
+  google_breakpad::ExceptionHandler eh(descriptor, NULL, dumpCallback, NULL, true, -1);
 
 #ifdef Q_OS_UNIX
   if (setpgid(0, 0) < 0) {
