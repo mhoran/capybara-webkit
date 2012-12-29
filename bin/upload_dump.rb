@@ -2,19 +2,32 @@
 require 'rbconfig'
 require 'net/http'
 require 'cgi'
+require 'securerandom'
 
-def dir
+ROOT = File.expand_path("..", File.dirname(__FILE__))
+
+def dump_syms
   case RbConfig::CONFIG['host_os']
   when /linux/
-    "linux"
+    dir = 'linux'
   when /darwin/
-    "mac"
+    dir = 'mac'
   end
+  File.join(ROOT, "breakpad", "src", "tools", dir, "dump_syms", "dump_syms")
 end
 
-root = File.expand_path("..", File.dirname(__FILE__))
-dump_syms = File.join(root, "breakpad", "src", "tools", dir, "dump_syms", "dump_syms")
-data = `#{dump_syms} #{File.join(root, "bin", "webkit_server")}`
+def symbols
+  case RbConfig::CONFIG['host_os']
+  when /linux/
+    file = File.join(ROOT, "bin", "webkit_server")
+  when /darwin/
+    `dsymutil #{File.join(ROOT, "bin", "webkit_server")}`
+    file = File.join(ROOT, "bin", "webkit_server.dSYM")
+  end
+  `#{dump_syms} #{file}`
+end
+
+dump = File.read(ARGV[0])
 
 def file_to_multipart(key,filename,mime_type,content)
   "Content-Disposition: form-data; name=\"#{CGI::escape(key)}\"; filename=\"#{filename}\"\r\n" +
@@ -25,10 +38,10 @@ def file_to_multipart(key,filename,mime_type,content)
 end
 
 params = [
-  file_to_multipart('symbols','webkit_server.sym','application/octet-stream',data),
-  file_to_multipart('dump','webkit_server.dmp','application/octet-stream',File.read(ARGV[0])) ]
+  file_to_multipart('symbols','webkit_server.sym','application/octet-stream',symbols),
+  file_to_multipart('dump','webkit_server.dmp','application/octet-stream',dump) ]
 
-boundary = '349832898984244898448024464570528145'
+boundary = SecureRandom.hex
 query =
   params.collect {|p| '--' + boundary + "\r\n" + p}.join('') + "--" + boundary + "--\r\n"
 
