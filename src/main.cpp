@@ -16,23 +16,14 @@
 static bool dumpCallback(const google_breakpad::MinidumpDescriptor& descriptor, void* context, bool succeeded)
 {
   Q_UNUSED(context);
-  printf("Dump path: %s\n", descriptor.path());
-  int child = fork();
-  if (child == 0) {
-    execl("bin/upload_dump.rb", "upload_dump.rb", descriptor.path(), (char *) NULL);
-  }
+  fprintf(stderr, "capybara-webkit has crashed. Please run `upload_dump.rb %s` to submit a crash report.\n", descriptor.path());
   return succeeded;
 }
 #elif defined Q_OS_MAC
 static bool dumpCallback(const char* dump_dir, const char* minidump_id, void* context, bool succeeded)
 {
   Q_UNUSED(context);
-  int child = fork();
-  if (child == 0) {
-    char dump_path[strlen(dump_dir) + strlen(minidump_id) + 6];
-    sprintf(dump_path, "%s/%s.dmp", dump_dir, minidump_id);
-    execl("bin/upload_dump.rb", "upload_dump.rb", dump_path, (char *) NULL);
-  }
+  fprintf(stderr, "capybara-webkit has crashed. Please run `upload_dump.rb %s/%s.dmp` to submit a crash report.\n", dump_dir, minidump_id);
   return succeeded;
 }
 #endif
