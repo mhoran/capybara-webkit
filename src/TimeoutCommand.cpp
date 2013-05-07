@@ -5,6 +5,7 @@
 #include "ErrorMessage.h"
 #include <QTimer>
 #include <QApplication>
+#include "NetworkAccessManager.h"
 
 TimeoutCommand::TimeoutCommand(Command *command, WebPageManager *manager, QObject *parent) : Command(parent) {
   m_command = command;
@@ -58,8 +59,12 @@ void TimeoutCommand::commandTimeout() {
   disconnect(m_manager, SIGNAL(loadStarted()), this, SLOT(pageLoadingFromCommand()));
   disconnect(m_manager, SIGNAL(pageFinished(bool)), this, SLOT(pendingLoadFinished(bool)));
   disconnect(m_command, SIGNAL(finished(Response *)), this, SLOT(commandFinished(Response *)));
-  m_manager->currentPage()->triggerAction(QWebPage::Stop);
   QString message = QString("Request timed out after %1 second(s)").arg(m_manager->getTimeout());
+  foreach(QByteArray url, m_manager->networkAccessManager()->m_requests) {
+    message += " ";
+    message += url;
+  }
+  m_manager->currentPage()->triggerAction(QWebPage::Stop);
   finish(false, new ErrorMessage("TimeoutError", message));
 }
 

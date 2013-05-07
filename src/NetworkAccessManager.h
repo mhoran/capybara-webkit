@@ -16,6 +16,7 @@ class NetworkAccessManager : public QNetworkAccessManager {
     void setUserName(const QString &userName);
     void setPassword(const QString &password);
     void setUrlBlacklist(QStringList urlBlacklist);
+    QSet<QByteArray> m_requests;
 
   protected:
     QNetworkReply* createRequest(QNetworkAccessManager::Operation op, const QNetworkRequest &req, QIODevice * outgoingData);

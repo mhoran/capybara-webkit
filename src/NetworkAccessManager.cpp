@@ -25,6 +25,7 @@ QNetworkReply* NetworkAccessManager::createRequest(QNetworkAccessManager::Operat
         new_request.setRawHeader(item.key().toLatin1(), item.value().toLatin1());
     }
     QNetworkReply *reply = new NetworkReplyProxy(QNetworkAccessManager::createRequest(operation, new_request, outgoingData), this);
+    m_requests << url;
     emit requestCreated(url, reply);
     return reply;
   }
@@ -38,6 +39,7 @@ void NetworkAccessManager::finished(QNetworkReply *reply) {
     QUrl requestedUrl = reply->url();
     while (m_redirectMappings.contains(requestedUrl))
       requestedUrl = m_redirectMappings.take(requestedUrl);
+    m_requests.remove(requestedUrl.toEncoded());
     emit finished(requestedUrl, reply);
   }
 }
@@ -62,7 +64,7 @@ void NetworkAccessManager::setPassword(const QString &password) {
 
 void NetworkAccessManager::provideAuthentication(QNetworkReply *reply, QAuthenticator *authenticator) {
   Q_UNUSED(reply);
-  if (m_userName != authenticator->user()) 
+  if (m_userName != authenticator->user())
     authenticator->setUser(m_userName);
   if (m_password != authenticator->password())
     authenticator->setPassword(m_password);
