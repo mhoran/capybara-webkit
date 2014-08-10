@@ -17,7 +17,6 @@ void PageLoadingCommand::start() {
   m_manager->logger() << "Started" << m_command->toString();
   connect(m_command, SIGNAL(finished(Response *)), this, SLOT(commandFinished(Response *)));
   connect(m_manager, SIGNAL(loadStarted()), this, SLOT(pageLoadingFromCommand()));
-  connect(m_manager, SIGNAL(pageFinished(bool)), this, SLOT(pendingLoadFinished(bool)));
   m_command->start();
 };
 
@@ -46,8 +45,9 @@ void PageLoadingCommand::commandFinished(Response *response) {
   disconnect(m_manager, SIGNAL(loadStarted()), this, SLOT(pageLoadingFromCommand()));
   m_manager->logger() << "Finished" << m_command->toString() << "with response" << response->toString();
 
-  if (m_pageLoadingFromCommand)
+  if (m_manager->isLoading()) {
+    connect(m_manager, SIGNAL(pageFinished(bool)), SLOT(pendingLoadFinished(bool)));
     m_pendingResponse = response;
-  else
+  } else
     emit finished(response);
 }
