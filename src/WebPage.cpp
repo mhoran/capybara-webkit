@@ -347,6 +347,7 @@ QStringList WebPage::getAttachedFileNames() {
 
 void WebPage::handleSslErrorsForReply(QNetworkReply *reply, const QList<QSslError> &errors) {
   Q_UNUSED(errors);
+  qCritical() << "WebPage::handleSslErrorsForReply()" << m_manager->ignoreSslErrors();
   if (m_manager->ignoreSslErrors())
     reply->ignoreSslErrors();
 }

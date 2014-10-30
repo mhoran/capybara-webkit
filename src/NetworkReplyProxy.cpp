@@ -51,7 +51,7 @@ qint64 NetworkReplyProxy::readData(char* data, qint64 maxlen)
   return size;
 }
 
-void NetworkReplyProxy::ignoreSslErrors() { m_reply->ignoreSslErrors(); }
+void NetworkReplyProxy::ignoreSslErrors() { qCritical() << "NetworkReplyProxy::ignoreSslErrors()"; m_reply->ignoreSslErrors(); }
 void NetworkReplyProxy::applyMetaData() {
   foreach(QNetworkReply::RawHeaderPair header, m_reply->rawHeaderPairs())
     setRawHeader(header.first, header.second);
